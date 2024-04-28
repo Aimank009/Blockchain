@@ -6,7 +6,7 @@ import { getReencryptPublicKey } from "../utils/RencryptPublicKey";
 import { Buffer } from "buffer";
 window.Buffer = Buffer;
 
-const CONTRACT_ADDRESS = "0xA4c5C4c33Bc4c55a0d73F3692311334546FEc78c";
+const CAPTABLE_ADDRESS = "0x13D6c7652EaD49b377c9e7E5021D11FfaF032342";
 const AddEmployee = ({ onClose }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -26,15 +26,18 @@ const AddEmployee = ({ onClose }) => {
     e.preventDefault();
     try {
       const instance = await getInstance();
-      const reencrypt = await getReencryptPublicKey(CONTRACT_ADDRESS);
+      const reencrypt = await getReencryptPublicKey(CAPTABLE_ADDRESS);
       console.log(reencrypt);
-      console.log(await instance.hasKeypair(CONTRACT_ADDRESS));
+      console.log(await instance.hasKeypair(CAPTABLE_ADDRESS));
 
       const contractInstance = await captableContract();
 
-      const amount =formData.amount
+      const amount =formData.amount;
+
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
       
-      const key=await contractInstance.adminKey("0x97519b3c83B6d3A695C5DACe9fa31f53c2CF41C0");
+      const key=await contractInstance.adminKey(accounts[0]);
       console.log(key)
 
       const tx = await contractInstance.addEmploy("0x26Ea8a28698249cC6Bb316627E64f9d7eFBb4e48",key);
@@ -45,17 +48,7 @@ const AddEmployee = ({ onClose }) => {
       const alloc=await contractInstance.addAllocation("0x26Ea8a28698249cC6Bb316627E64f9d7eFBb4e48",cipher,key);
       const alocreci = await alloc.wait();
       console.log("Alloc",alocreci);
-      // const ciphertext = await contractInstance.addvalue(
-      //   reencrypt.publicKey,
-      //   reencrypt.signature
-      // );
-
-      // console.log("ciphertext", ciphertext, typeof ciphertext);
-
-      // const encryptedValue = ciphertext;
-
-      // const amount = await instance.decrypt(CONTRACT_ADDRESS, ciphertext);
-      // console.log("Amount", amount);
+      
 
     }
     catch(error){
